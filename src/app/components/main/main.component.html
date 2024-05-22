@@ -1,0 +1,16 @@
+<section class="main">
+  <ul class="todo-list">
+    <!-- <li *ngFor="let task of tasksMain" [ngClass]="{'completed': task.completed}">
+      <div class="view">
+        <input class="toggle" type="checkbox" [checked]="task.completed" />
+        <label>{{task.title}}</label>
+        <button class="destroy"></button>
+      </div>
+      <input class="edit" [value]="task.title" />
+    </li> -->
+
+    <app-task *ngFor="let task of tasksMain" [dataTask]="task" ></app-task>
+
+
+  </ul>
+</section>

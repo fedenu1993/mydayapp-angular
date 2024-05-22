@@ -1,0 +1,8 @@
+<li *ngIf="activeRoute" [ngClass]="{'completed': dataTask.completed && !editing, 'editing': editing}">
+  <div class="view">
+    <input class="toggle" type="checkbox" [checked]="dataTask.completed" (change)="onCompleted($event)" />
+    <label (dblclick)="onEdited()">{{dataTask.title}}</label>
+    <button class="destroy"></button>
+  </div>
+  <input #inputEdited (keyup)="onKeyUp($event, inputEdited)" class="edit" [value]="dataTask.title" />
+</li>
