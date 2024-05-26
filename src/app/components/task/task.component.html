@@ -2,7 +2,7 @@
   <div class="view">
     <input class="toggle" type="checkbox" [checked]="dataTask.completed" (change)="onCompleted($event)" />
     <label (dblclick)="onEdited()">{{dataTask.title}}</label>
-    <button class="destroy"></button>
+    <button class="destroy" (click)="onDeleted()"></button>
   </div>
-  <input #inputEdited (keyup)="onKeyUp($event, inputEdited)" class="edit" [value]="dataTask.title" />
+  <input #inputEdited [formControl]="titleControl" (keyup)="onKeyUp($event)" (blur)="escapeTask()" class="edit" [value]="dataTask.title" />
 </li>

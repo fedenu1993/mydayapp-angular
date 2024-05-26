@@ -25,12 +25,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     await this.tasksService.list()
     this.tasksSubscription = this.tasksService.myTasks$.subscribe(e => {
       this.existTasks = e.length > 0;
-      const ruta = this.route.snapshot.routeConfig?.path;
-      if(ruta == 'completed'){
-        e = e.filter(t => t.completed);
-      }else if(ruta == 'pending'){
-        e = e.filter(t => !t.completed);
-      }
       this.tasks = e
     })
 

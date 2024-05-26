@@ -4,9 +4,9 @@
     <!-- Remove this if you don't implement routing -->
     <ul class="filters">
         <li *ngFor="let filter of filters">
-            <a [routerLink]="[filter.route]" routerLinkActive="selected">{{filter.value}}</a>
+            <a [routerLink]="[filter.route]" routerLinkActive="selected" [routerLinkActiveOptions]="{exact: true}">{{filter.value}}</a>
         </li>
     </ul>
     <!-- Hidden if no completed items are left ↓ -->
-    <button (click)="deleteTasksCompleted()" class="clear-completed">Clear completed</button>
+    <button *ngIf="tasksCompleted > 0" (click)="deleteTasksCompleted()" class="clear-completed">Clear completed</button>
 </footer>

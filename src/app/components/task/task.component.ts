@@ -1,8 +1,9 @@
-import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Task } from 'src/app/entities/task';
 import { TasksService } from 'src/app/services/tasks.service';
 import { Subscription } from 'rxjs';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-task',
@@ -17,6 +18,14 @@ export class TaskComponent implements OnInit, OnDestroy {
   activeRoute: boolean = true;
   editedTaskSubscription: Subscription = new Subscription();
 
+  titleControl: FormControl = new FormControl('');
+
+
+  @HostListener('window:keydown.esc', ['$event'])
+  handleKeyDown(event: KeyboardEvent) {
+    this.escapeTask()
+  }
+
   constructor(
     private tasksService: TasksService,
     private route: ActivatedRoute,
@@ -24,6 +33,16 @@ export class TaskComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
+
+    this.titleControl.setValue(this.dataTask.title);
+
+    const ruta = this.route.snapshot.routeConfig?.path;
+    if (ruta == 'completed') {
+      this.activeRoute = this.dataTask.completed;
+    } else if (ruta == 'pending') {
+      this.activeRoute = !this.dataTask.completed;
+    }
+
     this.editedTaskSubscription = this.tasksService.editedTask$.subscribe(e => {
       this.editing = e.edit
       if (e.edit) {
@@ -32,32 +51,52 @@ export class TaskComponent implements OnInit, OnDestroy {
         }, 0);
       }
     })
-    const ruta = this.route.snapshot.routeConfig?.path;
-    if(ruta == 'completed'){
-      this.activeRoute = this.dataTask.completed;
-    }else if(ruta == 'pending'){
-      this.activeRoute = !this.dataTask.completed;
-    }
+
   }
 
   async onCompleted(event: Event) {
     const checkbox = event.target as HTMLInputElement;
     this.dataTask.completed = checkbox.checked;
-    await this.tasksService.update(this.dataTask);
+    try {
+      await this.tasksService.update(this.dataTask);
+    } catch (error) {
+      console.error("Error en onCompleted", error);
+      throw error;
+    }
+  }
+
+  async onDeleted(){
+    await this.tasksService.delete([this.dataTask.id]);
   }
 
   onEdited() {
     this.tasksService.editingTask(this.dataTask.id, true);
   }
 
-  async onKeyUp(event: KeyboardEvent, input: HTMLInputElement) {
-    if (event.key == 'Enter') {
-      this.dataTask.title = input.value.trim();
-      await this.tasksService.update(this.dataTask)
-      this.tasksService.editingTask('', false);
+  async onKeyUp(event: KeyboardEvent) {
+    let title = this.titleControl.value.trim();
+    if (event.key == 'Enter' && title != '') {
+      await this.saveTask(title)
     } else if (event.key == 'Escape') {
-      this.tasksService.editingTask('', false);
+      this.escapeTask()
     }
+  }
+
+  async saveTask(title: string){
+    this.dataTask.title = title;
+    try {
+      await this.tasksService.update(this.dataTask)
+    } catch (error) {
+      console.error("Error en onKeyUp Enter", error);
+      throw error;
+    }
+
+    this.tasksService.editingTask('', false);
+  }
+
+  escapeTask(){
+    this.titleControl.setValue(this.dataTask.title);
+    this.tasksService.editingTask('', false);
   }
 
   ngOnDestroy(): void {

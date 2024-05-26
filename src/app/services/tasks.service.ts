@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Task } from '../entities/task';
+import { ActivatedRoute } from '@angular/router';
+import { LocalstorageService } from './localstorage.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,24 +15,31 @@ export class TasksService {
   editedTask = new BehaviorSubject<editTaskObservable>({id: '', edit: false});
   editedTask$ = this.editedTask.asObservable();
 
-  async getTasks() {
-    const tasksStorage = localStorage.getItem('mydayapp-angular');
-    let array = [];
-    if (tasksStorage) {
-      array = await JSON.parse(tasksStorage);
-    }
-    return array;
+  routeFilter: string = '';
+
+  constructor(
+    private route: ActivatedRoute,
+    private localstorageService: LocalstorageService
+  ){
+    this.routeFilter = this.route.snapshot.routeConfig?.path ?? '';
   }
 
-  setTasks(tasks: Task[]) {
-    localStorage.setItem('mydayapp-angular', JSON.stringify(tasks));
+  setTasks(tasks: Task[]){
+    this.localstorageService.setTasks(tasks)
     this.myTasks.next(tasks);
   }
 
   async list() {
     try {
-      const tasks = await this.getTasks();
-      this.myTasks.next(tasks);
+      const tasks = await this.localstorageService.getTasks();
+      let tasksWithFilters = tasks;
+      // const ruta = this.route.snapshot.routeConfig?.path;
+      if(this.routeFilter == 'completed'){
+        tasksWithFilters = tasksWithFilters.filter((t: Task) => t.completed);
+      }else if(this.routeFilter == 'pending'){
+        tasksWithFilters = tasksWithFilters.filter((t: Task) => !t.completed);
+      }
+      this.myTasks.next(tasksWithFilters);
     } catch (error) {
       console.error("Error al obtener registros", error);
       throw error;
@@ -39,7 +48,7 @@ export class TasksService {
 
   async create(task: Task) {
     try {
-      const tasks: Task[] = await this.getTasks();
+      const tasks: Task[] = await this.localstorageService.getTasks();
       let newIdTask = "1";
       if(tasks.length > 0){
         newIdTask = (parseInt(tasks.sort((a, b) => parseInt(a.id) - parseInt(b.id))[tasks.length - 1].id) + 1).toString();
@@ -55,7 +64,7 @@ export class TasksService {
 
   async delete(id: string[]) {
     try {
-      let tasks: Task[] = await this.getTasks();
+      let tasks: Task[] = await this.localstorageService.getTasks();
       tasks = tasks.filter(e => !id.includes(e.id))
       this.setTasks(tasks);
     } catch (error) {
@@ -66,7 +75,7 @@ export class TasksService {
 
   async update(task: Task) {
     try {
-      let tasks: Task[] = await this.getTasks();
+      let tasks: Task[] = await this.localstorageService.getTasks();
       let index = tasks.findIndex(t => t.id == task.id);
       if (index !== -1) {
         tasks[index] = task;

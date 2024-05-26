@@ -12,8 +12,9 @@ export class FooterComponent implements OnInit, OnDestroy{
 
   tasks: Task[] = [];
   tasksPending: number = 0;
+  tasksCompleted: number = 0;
   filters: {value: string, route: string}[] = [
-    {value: 'All', route: '/all'},
+    {value: 'All', route: '/'},
     {value: 'Pending', route: '/pending'},
     {value: 'Completed', route: '/completed'}
   ];
@@ -28,6 +29,7 @@ export class FooterComponent implements OnInit, OnDestroy{
     this.tasksSubscription = this.tasksService.myTasks$.subscribe(e => {
       this.tasks = e;
       this.tasksPending = e.filter(e => !e.completed).length
+      this.tasksCompleted = e.filter(e => e.completed).length
     })
   }
 
