@@ -1,5 +1,5 @@
 {
-  "name": "laboratorio-mydayapp-angular",
+  "name": "mydayapp-angular",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -12,6 +12,7 @@
     "e2e:install": "playwright install",
     "lint": "ng lint"
   },
+  "homepage": "https://fedenu1993.github.io/mydayapp-angular",
   "private": true,
   "dependencies": {
     "@angular/animations": "15.2.0",
